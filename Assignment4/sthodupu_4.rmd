@@ -1,0 +1,193 @@
+---
+title: "Assignment 4"
+author: "Shreya Thodupunuri"
+date: "2023-09-23"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+studentid: 811301506
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Question
+
+Consider the problem from a previous assignment.
+The Weigelt Corporation has three branch plants with excess production capacity. Fortunately,
+the corporation has a new product ready to begin production, and all three plants have this
+capability, so some of the excess capacity can be used in this way. This product can be made in
+three sizes--large, medium, and small--that yield a net unit profit of $420, $360, and $300,
+respectively. Plants 1, 2, and 3 have the excess capacity to produce 750, 900, and 450 units per
+day of this product, respectively, regardless of the size or combination of sizes involved.
+The amount of available in-process storage space also imposes a limitation on the production
+rates of the new product. Plants 1, 2, and 3 have 13,000, 12,000, and 5,000 square feet,
+respectively, of in-process storage space available for a day's production of this product. Each
+unit of the large, medium, and small sizes produced per day requires 20, 15, and 12 square feet,
+respectively.
+Sales forecasts indicate that if available, 900, 1,200, and 750 units of the large, medium, and
+small sizes, respectively, would be sold per day.
+At each plant, some employees will need to be laid off unless most of the plant’s excess
+production capacity can be used to produce the new product. To avoid layoffs if possible,
+management has decided that the plants should use the same percentage of their excess capacity
+to produce the new product.
+Management wishes to know how much of each of the sizes should be produced by each of the
+plants to maximize profit.
+Solve the problem using lpsolve, or any other equivalent library in R.
+
+
+**A. Define the decision variables.**
+
+The number of units of the new product, regardless of size, that should be produced
+on each plant to maximize the profit of the Weigelt corporation.
+
+Note:
+X= number of units produced on each plant,
+
+i.e., i = 1 (Plant 1), 2 (Plant 2), 3 (Plant 3).
+L, M and S = Product’s Size
+
+Where L = large, M = medium, S = small.
+
+Decision Variables:
+
+Number of Large sized items produced on plant 1
+$$XL_1$$ 
+
+Number of Medium sized items produced on plant 2
+$$XM_2$$
+
+Number of Small sized items produced on plant 3
+$$XS_3$$
+
+
+**B. Formulate a Linear Programming for this Problem:**
+
+Number of Large sized items produced on plant i
+
+$$XL_i$$
+Number of Medium sized items produced on plant i
+$$XM_i$$
+Number of Small sized items produced on plant i
+$$XS_i$$
+Where i = 1 (Plant 1), 2 (Plant 2), 3 (Plant 3).
+
+Maximized Profit:
+z=maximized profit
+
+$$Z =420 (XL_1 + XL_2 + XL_3) + 360 (XM_1 + XM_2 + XM_3) +300 (XS_1 + XS_2 + XS_3)$$
+
+Constraints:
+
+Total number of size’s units produced regardless the plant:
+ $$L=XL_1 + XL_2 + XL_3$$
+$$M = XM_1 + XM_2 + XM_3$$
+$$S = XS_1 + XS_2 + XS_3$$
+Production Capacity per unit by plant each day
+i.e.,
+$$Plant 1 = XL_1 + XM_1 + XS_1 ≤ 750$$
+$$Plant 2 = XL_2 + XM_2 + XS_2 ≤ 900$$
+$$Plant 3 = XL_3 + XM_3+ XS_3 ≤ 450$$
+
+
+Storage capacity per unit by plant each day:
+
+$$Plant 1 = 20XL_1 + 15XM_1 + 12XS_1 ≤ 13000$$
+$$Plant 2 = 20XL_2 + 15XM_2 + 12XS_2 ≤ 12000$$
+$$Plant 3 = 20XL_3 + 15XM_3 + 12XS_3 ≤ 5000$$
+Sales forecast per day:
+$$L = XL_1 + XL_2 + XL_3 ≤ 900$$
+$$M = XM_1 + XM_2 + XM_3 ≤ 1200$$
+$$S = XS_1 + XS_2 + XS_3 ≤ 750$$
+The Plants always utilize the same % of their excess capacity to produce the new
+product.
+$$XL_1 + XM_1 + XS_1/750 = XL_2 + XM_2 + XS_2/900 = XL_3 + XM_3 + XS_3/450$$
+
+#Solving the lp  problem using R
+
+```{r}
+#Installing and loading libraries
+library(lpSolve)
+library(tinytex)
+```
+
+```{r}
+
+# Setting up the objective function
+fun_objective <- c(420, 360, 300,420, 360, 300,420, 360, 300)
+fun_objective
+
+```
+
+
+```{r}
+# Setting up the Left Hand Side of constraint matrix
+const_matrix <- matrix(c(1, 1, 1, 0, 0, 0, 0, 0, 0,
+                        0, 0, 0, 1, 1, 1, 0 ,0, 0,
+                        0, 0, 0, 0, 0, 0, 1, 1, 1,
+                        20, 15, 12, 0, 0, 0, 0, 0, 0,
+                        0, 0, 0, 20, 15, 12, 0, 0, 0,
+                        0, 0, 0, 0, 0, 0, 20, 15, 12,
+                        1, 0, 0, 1, 0, 0, 1, 0, 0,
+                        0, 1, 0, 0, 1, 0, 0, 1, 0,
+                        0, 0, 1, 0, 0, 1, 0, 0, 1,
+                        900, 900, 900, -750, -750, -750, 0, 0, 0,
+                        0, 0, 0, 450, 450, 450, -900, -900, -900,
+                        450, 450, 450, 0, 0, 0, -750, -750, -750), nrow = 12, byrow = TRUE)
+const_matrix
+```
+
+```{r}
+#Setting up the Right Hand Side coefficients
+fun_rhs <- c(750,
+                 900,
+                 450,
+                 13000,
+                 12000,
+                 5000,
+                 900,
+                 1200,
+                 750,
+                 0,
+                 0,
+                 0)
+fun_rhs
+
+```
+
+```{r}
+
+
+
+# Setting the unequality signs
+fun_dir <- c("<=",
+              "<=",
+              "<=",
+              "<=",
+              "<=",
+              "<=",
+              "<=",
+              "<=",
+              "<=",
+              "=",
+              "=",
+              "=")
+fun_dir
+```
+
+
+```{r}
+
+
+# Set up the final lp problem
+lp("max",fun_objective, const_matrix, fun_dir, fun_rhs)
+```
+
+```{r}
+# To get the solution of the lp problem
+lp("max", fun_objective, const_matrix, fun_dir, fun_rhs)$solution
+
+```
+
